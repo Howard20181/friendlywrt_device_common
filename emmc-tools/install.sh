@@ -9,13 +9,14 @@ OPKG_BIN=$TOP_DIR/friendlywrt/staging_dir/host/bin/opkg
 install_emmc_tools_pkg() {
     local pkg_base=$1
     if [ -f "$APK_BIN" ]; then
-        $APK_BIN --root $ROOTFS_DIR add --no-network --force-overwrite \
-            --allow-untrusted ./${pkg_base}.apk 2>/dev/null
+        # Build an offline rootfs; target hooks must not run on the host.
+        "$APK_BIN" --root "$ROOTFS_DIR" add --no-network --no-scripts --force-overwrite \
+            --allow-untrusted "./${pkg_base}.apk"
     elif [ -f "$OPKG_BIN" ]; then
-        $OPKG_BIN --force-overwrite --offline-root $ROOTFS_DIR install \
-            ./${pkg_base}.ipk 2>/dev/null
+        "$OPKG_BIN" --force-overwrite --offline-root "$ROOTFS_DIR" install \
+            "./${pkg_base}.ipk"
     else
-        echo "ERROR: neither apk nor opkg found"
+        echo "ERROR: neither apk nor opkg found" >&2
         exit 1
     fi
 }
